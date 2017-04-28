@@ -7,6 +7,12 @@ from ..models import User
 from ..email import send_email
 from .forms import LoginForm, RegistrationForm
 
+
+@auth.before_app_first_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.ping()
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
