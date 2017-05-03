@@ -12,7 +12,7 @@ class Permission:
     COMMIT = 0x02
     WRITE_ARTICLES = 0x04
     MODERATE_COMMENTS = 0x08
-    ADMINSTER = 0x80
+    ADMINISTER = 0x80
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -84,7 +84,7 @@ class User(UserMixin, db.Model):
         return self.role is not None and (self.role.permissions & permissions) == permissions
 
     def is_administrator(self):
-        return self.can(Permission.ADMINSTER)
+        return self.can(Permission.ADMINISTER)
 
     def ping(self):
         self.last_seen = datetime.utcnow()
