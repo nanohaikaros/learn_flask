@@ -2,6 +2,7 @@ import hashlib
 from datetime import datetime
 
 from flask import current_app, request
+from sqlalchemy.sql.functions import user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
 
@@ -60,6 +61,31 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+
+
+    @staticmethod
+    def generate_fake(count=100):
+        from sqlalchemy.exc import IntegrityError
+        from random import seed
+        import forgery_py
+
+
+        seed()
+        for i in range(count):
+            u = User(eamil=forgery_py.internet.email_address(),
+                     username=forgery_py.internet.user_name(True),
+                     password=forgery_py.lorem_ipsum.word(),
+                     confirmed=True,
+                     name=forgery_py.name.full_name(),
+                     location=forgery_py.address.city(),
+                     about_me=forgery_py.lorem_ipsum.sentence(),
+                     member_since=forgery_py.date.date(True))
+            db.session.add(u)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -127,3 +153,17 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+    @staticmethod
+    def generate_fake(count=100):
+        from random import seed, randint
+        import forgery_by
+
+        seed()
+        user_count = user.query.count()
+        for i in range(count):
+            u = User.query.offset(randint(0, user_count - 1)).first()
+            p = Post(body=forgery_by.lorem_ipsum.sentences(randint(1, 5)),
+                    timestamp=forgery_by.date.date(True),
+                    author=u)
+            db.session.add(p)
+            db.session.commit()
