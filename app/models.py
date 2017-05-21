@@ -2,7 +2,6 @@ import hashlib
 from datetime import datetime
 
 from flask import current_app, request
-from sqlalchemy.sql.functions import user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
 
@@ -72,10 +71,8 @@ class User(UserMixin, db.Model):
 
         seed()
         for i in range(count):
-            u = User(eamil=forgery_py.internet.email_address(),
-                     username=forgery_py.internet.user_name(True),
+            u = User(username=forgery_py.internet.user_name(True),
                      password=forgery_py.lorem_ipsum.word(),
-                     confirmed=True,
                      name=forgery_py.name.full_name(),
                      location=forgery_py.address.city(),
                      about_me=forgery_py.lorem_ipsum.sentence(),
@@ -156,14 +153,14 @@ class Post(db.Model):
     @staticmethod
     def generate_fake(count=100):
         from random import seed, randint
-        import forgery_by
+        import forgery_py
 
         seed()
-        user_count = user.query.count()
+        user_count = User.query.count()
         for i in range(count):
             u = User.query.offset(randint(0, user_count - 1)).first()
-            p = Post(body=forgery_by.lorem_ipsum.sentences(randint(1, 5)),
-                    timestamp=forgery_by.date.date(True),
+            p = Post(body=forgery_py.lorem_ipsum.sentences(randint(1, 5)),
+                    timestamp=forgery_py.date.date(True),
                     author=u)
             db.session.add(p)
             db.session.commit()
